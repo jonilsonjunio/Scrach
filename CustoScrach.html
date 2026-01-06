@@ -158,6 +158,31 @@
             .print-total { font-size: 2rem; font-weight: bold; }
         }
         .print-footer { display: none; }
+        /* --- CORREÇÃO PARA CELULAR (MOBILE FIX) --- */
+@media (max-width: 768px) {
+    /* Ajusta o container para não ter margens grandes */
+    .container { padding: 10px; width: 100%; }
+
+    /* Força os inputs a ficarem um embaixo do outro e ocuparem 100% */
+    .main-panel, .quick-calc-wrapper { flex-direction: column; }
+    .input-group, .quick-inputs input { width: 100% !important; margin-bottom: 10px; }
+    
+    /* Faz a tabela ter rolagem horizontal (scroll) se for muito larga */
+    .product-table-container { 
+        overflow-x: auto; 
+        display: block; 
+        width: 100%; 
+    }
+    
+    /* Garante que a tabela não encolha o texto demais */
+    table { min-width: 600px; } 
+
+    /* Aumenta o tamanho da fonte para leitura fácil */
+    body, input, td { font-size: 16px; }
+    
+    /* Esconde colunas menos importantes no celular se precisar */
+    .col-price { display: none; } /* Oculta preço unitário no celular para caber melhor */
+}
     </style>
 </head>
 <body>
@@ -369,3 +394,4 @@
 
 </body>
 </html>
+
