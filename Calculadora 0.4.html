@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora PRODUÇÃO</title>
+    <style>
+        :root {
+            --primary: #2980b9;
+            --secondary: #2c3e50;
+            --accent: #27ae60;
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --text: #333;
+            --border: #ddd;
+        }
+
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; padding-bottom: 100px; }
+        
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        /* Cabeçalho do PDF (Invisível na tela normal) */
+        .print-header { display: none; }
+
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { margin: 0; color: var(--secondary); font-size: 1.8rem; }
+        
+        /* --- BLOCO 1: MEDIDAS PRINCIPAIS --- */
+        .main-panel {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+            margin-bottom: 30px;
+            border-left: 6px solid var(--primary);
+        }
+
+        .input-group { display: flex; flex-direction: column; flex: 1; }
+        .input-group label { font-weight: 700; font-size: 0.85rem; color: #555; margin-bottom: 8px; text-transform: uppercase; }
+        .input-group input { padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.2rem; }
+        
+        .area-display {
+            background: var(--secondary);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 140px;
+            height: 52px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .area-display span { font-size: 0.75rem; opacity: 0.8; }
+        .area-display strong { font-size: 1.3rem; }
+
+        /* --- BLOCO 2: CALCULADORA AVULSA --- */
+        .quick-calc-wrapper {
+            background: #fff9e6;
+            border: 2px dashed #f1c40f;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .quick-title { color: #d35400; font-weight: bold; min-width: 150px; }
+        .quick-inputs { display: flex; gap: 10px; flex: 1; align-items: center; }
+        .quick-inputs input { padding: 8px; border: 1px solid #eebb55; border-radius: 6px; width: 100px; }
+        .quick-result { font-size: 1.5rem; font-weight: bold; color: #27ae60; background: white; padding: 5px 15px; border-radius: 6px; }
+
+        /* --- BLOCO 3: LISTA DE MATERIAIS --- */
+        .search-bar { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        
+        .product-table-container {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f9fa; text-align: left; padding: 15px; color: #666; font-size: 0.85rem; border-bottom: 2px solid var(--border); text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        
+        tr.selected { background-color: #e8f8f5; }
+        
+        .checkbox-cell { text-align: center; width: 50px; }
+        .checkbox-custom { transform: scale(1.5); cursor: pointer; accent-color: var(--accent); }
+        .col-name { font-weight: 600; color: var(--secondary); font-size: 1.05rem; }
+        .col-price { color: #7f8c8d; font-size: 0.9rem; }
+        .col-total { font-weight: 800; color: var(--primary); font-size: 1.2rem; text-align: right; }
+
+        /* --- BARRA FLUTUANTE DE SOMA --- */
+        .floating-total {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 1000;
+            width: 90%;
+            max-width: 600px;
+            justify-content: space-between;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+        .floating-total.visible { opacity: 1; bottom: 30px; pointer-events: all; }
+        
+        .total-value { font-size: 1.8rem; font-weight: bold; color: #2ecc71; }
+        
+        .btn-action { background: #3498db; border: none; color: white; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
+        .btn-action:hover { background: #2980b9; }
+        .btn-clear { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 15px; border-radius: 20px; cursor: pointer; margin-right: 10px; }
+
+        /* ESTILOS DE IMPRESSÃO (PDF) */
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; }
+            
+            /* Esconder elementos de interface */
+            .quick-calc-wrapper, .search-bar, .floating-total, .checkbox-cell, header, .btn-clear { display: none !important; }
+            
+            /* Esconder input de medidas e mostrar só texto */
+            .main-panel input { border: none; padding: 0; font-weight: bold; font-size: 1.2rem; color: black; }
+            .main-panel { border: 1px solid #ddd; box-shadow: none; margin-top: 20px; page-break-inside: avoid; }
+            
+            /* Mostrar cabeçalho do relatório */
+            .print-header { display: block; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+            .print-header h2 { margin: 0; }
+            .print-header p { margin: 5px 0 0; color: #666; }
+            
+            /* Esconder linhas NÃO selecionadas */
+            #lista-corpo tr:not(.selected) { display: none; }
+            
+            /* Ajustar tabela */
+            .product-table-container { box-shadow: none; border: 1px solid #eee; }
+            th { border-bottom: 1px solid #000; color: black; }
+            tr.selected { background-color: white !important; border-bottom: 1px solid #ddd; }
+            
+            /* Adicionar total final na impressão */
+            .print-footer { display: block !important; margin-top: 30px; text-align: right; border-top: 2px solid #333; padding-top: 10px; }
+            .print-total { font-size: 2rem; font-weight: bold; }
+        }
+        .print-footer { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="print-header">
+        <h2>Relatório de Produção Interna</h2>
+        <p>Data: <span id="data-hoje"></span></p>
+        <div style="margin-top: 15px;">
+            <label>Cliente / Ref:</label>
+            <input type="text" placeholder="" style="border: none; border-bottom: 1px dashed #999; width: 300px; font-size: 1.1rem;">
+        </div>
+    </div>
+
+    <header>
+        <h1>📐 Central de Produção</h1>
+    </header>
+
+    <div class="main-panel">
+        <div class="input-group">
+            <label>Largura (cm)</label>
+            <input type="number" id="largura" placeholder="0" oninput="calcularTudo()">
+        </div>
+        <div class="input-group">
+            <label>Altura (cm)</label>
+            <input type="number" id="altura" placeholder="0" oninput="calcularTudo()">
+        </div>
+        <div class="area-display">
+            <span>Área Total</span>
+            <strong id="area-total">0.00 m²</strong>
+        </div>
+    </div>
+
+    <div class="quick-calc-wrapper">
+        <div class="quick-title">⚡ Orçamento Avulso</div>
+        <div class="quick-inputs">
+            <input type="number" id="larg-av" placeholder="Larg. (cm)" oninput="calcularAvulso()">
+            <span>x</span>
+            <input type="number" id="alt-av" placeholder="Alt. (cm)" oninput="calcularAvulso()">
+            <span>=</span>
+            <input type="number" id="preco-av" placeholder="Preço m²" oninput="calcularAvulso()">
+        </div>
+        <div class="quick-result" id="res-avulso">R$ 0,00</div>
+    </div>
+
+    <input type="text" id="search" class="search-bar" placeholder="🔍 Buscar material (ex: ACM)..." oninput="filtrarTabela()">
+
+    <div class="product-table-container">
+        <table id="tabela-produtos">
+            <thead>
+                <tr>
+                    <th class="checkbox-cell">✔</th>
+                    <th>Material / Serviço</th>
+                    <th class="col-price">Preço m²</th>
+                    <th style="text-align: right;">Total Item</th>
+                </tr>
+            </thead>
+            <tbody id="lista-corpo">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="print-footer">
+        <span>Valor Total:</span>
+        <div class="print-total" id="total-impresso">R$ 0,00</div>
+    </div>
+</div>
+
+<div class="floating-total" id="floating-bar">
+    <div style="display: flex; align-items: center;">
+        <button class="btn-clear" onclick="limparSelecao()">Limpar</button>
+        <span class="total-value" id="soma-selecionados">R$ 0,00</span>
+    </div>
+    <button class="btn-action" onclick="window.print()">📄 Gerar PDF</button>
+</div>
+
+<script>
+    // Configura Data de Hoje
+    document.getElementById('data-hoje').innerText = new Date().toLocaleDateString('pt-BR');
+
+    // DADOS
+    const materiais = [
+        { nome: "Adesivo", preco: 85.00 },
+        { nome: "Transparente + Fundo", preco: 120.00 },
+        { nome: "Jateado Liso (S/ Impressão)", preco: 70.00 },
+        { nome: "Adesivo Branco (S/ Impressão)", preco: 30.00 },
+        { nome: "Jateado Impresso / Perfurado", preco: 100.00 },
+        { nome: "Plotagem Veículo", preco: 130.00 },
+        { nome: "Roland Recorte", preco: 150.00 },
+        { nome: "Lona | Banner", preco: 90.00 },
+        { nome: "Estrutura + Lona", preco: 270.00 },
+        { nome: "Quadro + Vergalhão + Lona", preco: 220.00 },
+        { nome: "Placa de Chapa", preco: 320.00 },
+        { nome: "PVC Adesivado (Laminado)", preco: 240.00 },
+        { nome: "ACM Adesivado + Estrutura", preco: 600.00 },
+        { nome: "ACM Adesivado + Estrutura + Letras", preco: 850.00 },
+        { nome: "ACM Adesivado + Estrutura // Backlight", preco: 1100.00 },
+        { nome: "ACM Adesivado S/ Estrutura", preco: 350.00 },
+        { nome: "Verniz", preco: 120.00 },
+        { nome: "Laminação (Transparente)", preco: 25.00 },
+        { nome: "Adesivo + Laminação", preco: 120.00 },
+        { nome: "Mão de Obra", preco: 50.00 },
+        { nome: "Papel / Cartaz", preco: 30.00 },
+        { nome: "Remoção de Adesivo", preco: 30.00 },
+        { nome: "Acrílico", preco: 500.00 },
+        { nome: "Letra PVC Expandido 20mm Pintado", preco: 1500.00 }
+    ];
+
+    const tbody = document.getElementById('lista-corpo');
+
+    function renderizarTabela() {
+        tbody.innerHTML = '';
+        materiais.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.id = `row-${index}`;
+            tr.innerHTML = `
+                <td class="checkbox-cell">
+                    <input type="checkbox" class="checkbox-custom" onchange="atualizarSelecao(this, ${index})">
+                </td>
+                <td class="col-name">${item.nome}</td>
+                <td class="col-price">R$ ${item.preco.toFixed(2)}</td>
+                <td class="col-total" data-preco="${item.preco}" id="total-${index}">R$ 0,00</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function calcularTudo() {
+        let largura = parseFloat(document.getElementById('largura').value) || 0;
+        let altura = parseFloat(document.getElementById('altura').value) || 0;
+        let area = (largura * altura) / 10000;
+
+        document.getElementById('area-total').innerText = area.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " m²";
+
+        materiais.forEach((item, index) => {
+            const total = area * item.preco;
+            const celula = document.getElementById(`total-${index}`);
+            celula.innerText = total.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+            celula.dataset.valorAtual = total;
+        });
+
+        recalcularSomaSelecionados();
+    }
+
+    function atualizarSelecao(checkbox, index) {
+        const linha = document.getElementById(`row-${index}`);
+        if(checkbox.checked) {
+            linha.classList.add('selected');
+        } else {
+            linha.classList.remove('selected');
+        }
+        recalcularSomaSelecionados();
+    }
+
+    function recalcularSomaSelecionados() {
+        const checks = document.querySelectorAll('.checkbox-custom:checked');
+        let soma = 0;
+        
+        checks.forEach(chk => {
+            const row = chk.closest('tr'); 
+            const valorTexto = row.querySelector('.col-total').dataset.valorAtual || 0;
+            soma += parseFloat(valorTexto);
+        });
+
+        const valorFormatado = soma.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+        
+        // Atualiza barra flutuante
+        document.getElementById('soma-selecionados').innerText = valorFormatado;
+        
+        // Atualiza total do PDF (oculto na tela)
+        document.getElementById('total-impresso').innerText = valorFormatado;
+
+        const bar = document.getElementById('floating-bar');
+        if(soma > 0 || checks.length > 0) {
+            bar.classList.add('visible');
+        } else {
+            bar.classList.remove('visible');
+        }
+    }
+
+    function limparSelecao() {
+        document.querySelectorAll('.checkbox-custom').forEach(c => {
+            c.checked = false;
+            c.closest('tr').classList.remove('selected');
+        });
+        recalcularSomaSelecionados();
+    }
+
+    function calcularAvulso() {
+        let l = parseFloat(document.getElementById('larg-av').value) || 0;
+        let a = parseFloat(document.getElementById('alt-av').value) || 0;
+        let p = parseFloat(document.getElementById('preco-av').value) || 0;
+        let area = (l * a) / 10000;
+        let total = area * p;
+        document.getElementById('res-avulso').innerText = total.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+    }
+
+    function filtrarTabela() {
+        const termo = document.getElementById('search').value.toLowerCase();
+        const linhas = document.querySelectorAll('#lista-corpo tr');
+        linhas.forEach(linha => {
+            const txt = linha.innerText.toLowerCase();
+            linha.style.display = txt.includes(termo) ? '' : 'none';
+        });
+    }
+
+    renderizarTabela();
+</script>
+
+</body>
+</html>
