@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORÇAMENTO Scrach 0.4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <style>
+        /* CONFIGURAÇÕES GERAIS */
+        body {
+            background-color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 0;
+            margin: 0;
+            font-family: sans-serif;
+        }
+
+        /* A FOLHA A4 */
+        .page {
+            position: relative;
+            background-image: url('ORÇAMENTO - base.png'); 
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-color: white;
+            width: 210mm;
+            height: 297mm;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            
+            /* ÁREA SEGURA */
+            padding-top: 55mm;    
+            padding-bottom: 40mm; 
+            padding-left: 15mm;
+            padding-right: 15mm;
+            box-sizing: border-box;
+            
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+        }
+
+        /* TABELA */
+        table { width: 100%; border-collapse: collapse; }
+        th { border-bottom: 2px solid black; padding: 5px; text-align: left; font-size: 12px; }
+        td { padding: 4px 5px; vertical-align: top; font-size: 13px; }
+        
+        tr.item-row { border-bottom: 1px solid #e5e7eb; }
+        tr.item-row:hover { background-color: #fefce8; }
+        
+        input, textarea { background: transparent; border: none; outline: none; width: 100%; resize: none; font-family: inherit; }
+        
+        /* IMPRESSÃO */
+        @media print {
+            @page { size: A4; margin: 0; } 
+            body { background: none; display: block; margin: 0; padding: 0; }
+            
+            .page {
+                box-shadow: none;
+                margin: 0;
+                width: 210mm;
+                height: 297mm;
+                page-break-after: always;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .page:last-child {
+                page-break-after: auto;
+                page-break-inside: avoid;
+                margin-bottom: 0;
+            }
+
+            .no-print { display: none !important; }
+            .add-btn-row { display: none !important; }
+            ::-webkit-scrollbar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="pages-container">
+        <div class="page" id="page-1">
+            
+            <div id="header-unique">
+                <div class="flex justify-end gap-6 mb-2 text-sm">
+                    <div>
+                        <span class="font-bold uppercase text-gray-600">Data:</span> 
+                        <input type="date" id="dateInput" class="text-gray-800 font-bold text-right w-32">
+                    </div>
+                    <div>
+                        <span class="font-bold uppercase text-gray-600">Validade:</span> 
+                        <input type="text" value="15 dias" class="w-16 text-gray-800 text-right border-b border-gray-400 border-dotted font-bold">
+                    </div>
+                </div>
+
+                <h1 class="text-4xl font-black text-red-600 text-center mb-4 uppercase tracking-tighter">Orçamento</h1>
+
+                <div class="mb-4 p-2 rounded border border-gray-300 bg-white/50">
+                    <h2 class="text-xs uppercase tracking-wide text-gray-500 font-bold mb-1">Cliente</h2>
+                    <input type="text" id="clientName" placeholder="Nome do Cliente" class="text-lg font-bold text-black mb-1 w-full">
+                    
+                    <div class="flex items-center gap-2 border-t border-gray-200 pt-1 mt-1">
+                        <div class="w-3/4">
+                             <input type="text" placeholder="Endereço / CNPJ / Detalhes" class="text-xs text-gray-600 w-full placeholder-gray-400">
+                        </div>
+                        <div class="h-4 w-px bg-gray-300"></div>
+                        <div class="w-1/4 flex items-center gap-1 text-green-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.017-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                            <input type="text" id="clientPhone" placeholder="WhatsApp" class="text-xs w-full text-gray-700 placeholder-green-600/50 font-medium">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="items-area flex-grow">
+                <table>
+                    <thead>
+                        <tr class="uppercase text-black font-bold">
+                            <th class="pl-2">Descrição</th>
+                            <th class="text-center w-24">Tam.</th> <th class="text-center w-12">Qtd</th>
+                            <th class="text-right w-20">Unit.</th>
+                            <th class="text-right w-24">Total</th>
+                            <th class="w-8 no-print"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="tbody-content">
+                        </tbody>
+                </table>
+                
+                <div class="add-btn-row mt-2">
+                    <button onclick="addItem()" class="text-xs font-bold text-red-600 hover:text-red-800 flex items-center gap-1 uppercase tracking-wide px-2 py-1 rounded hover:bg-red-50 transition border border-red-200">
+                        + Adicionar Item
+                    </button>
+                </div>
+            </div>
+
+            <div id="footer-summary" class="mt-auto border-t-2 border-black pt-2">
+                <div class="flex justify-end mb-2">
+                    <div class="w-1/2">
+                        <div class="flex justify-between text-xs text-gray-600 mb-1">
+                            <span>Subtotal:</span>
+                            <span class="subtotal-display">R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-600 items-center mb-1">
+                            <span>Desconto:</span>
+                            <div class="flex items-center border-b border-gray-300 w-20 justify-end">
+                                <span class="text-xs mr-1">- R$</span>
+                                <input type="number" id="discount" oninput="calculateTotal()" class="text-right w-full text-xs" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-xl font-black text-black mt-2 pt-1 border-t border-red-200">
+                            <span>TOTAL</span>
+                            <span class="total-display">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs text-gray-600">
+                    <h3 class="font-bold text-gray-500 uppercase mb-1 text-[10px]">Condições</h3>
+                    <textarea class="h-16 leading-tight text-justify w-full text-[11px]" spellcheck="false">Produção em até 20 dias úteis, parte criativa e impressão em até 10 dias úteis - Prazo total 30 dias úteis.
+Instalação na cidade e locais próximos já incluída no orçamento, demais localidades a consultar.
+INICIO DA PRODUÇÃO A PARTIR DO PAGAMENTO DE ENTRADA (40% do valor total).</textarea>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 w-full bg-gray-900 text-white p-3 flex justify-center gap-3 no-print shadow-xl z-50">
+        <button onclick="copyToClipboard()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded font-bold shadow flex items-center gap-2 text-sm transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+            Copiar Resumo
+        </button>
+        <button onclick="sendToWhatsapp()" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-bold shadow flex items-center gap-2 text-sm transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.017-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            Abrir Zap
+        </button>
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded font-bold shadow flex items-center gap-2 text-sm transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+            Gerar PDF
+        </button>
+    </div>
+
+    <script>
+        document.getElementById('dateInput').valueAsDate = new Date();
+        let pageCount = 1;
+        const LIMIT_PAGE_1 = 9;      
+        const LIMIT_PAGE_OTHER = 15; 
+
+        function formatCurrency(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function createNewPage() {
+            pageCount++;
+            const container = document.getElementById('pages-container');
+            const newPage = document.createElement('div');
+            newPage.className = 'page';
+            newPage.id = `page-${pageCount}`;
+            
+            // ATENÇÃO: Header da nova página também inclui a coluna Tam.
+            newPage.innerHTML = `
+                <div class="h-4"></div>
+                <div class="items-area flex-grow">
+                    <table>
+                        <thead>
+                            <tr class="uppercase text-black font-bold">
+                                <th class="pl-2">Descrição (Cont.)</th>
+                                <th class="text-center w-24">Tam.</th>
+                                <th class="text-center w-12">Qtd</th>
+                                <th class="text-right w-20">Unit.</th>
+                                <th class="text-right w-24">Total</th>
+                                <th class="w-8 no-print"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="tbody-content"></tbody>
+                    </table>
+                    <div class="add-btn-row mt-2">
+                        <button onclick="addItem()" class="text-xs font-bold text-red-600 hover:text-red-800 flex items-center gap-1 uppercase tracking-wide px-2 py-1 rounded hover:bg-red-50 transition border border-red-200">+ Adicionar Item</button>
+                    </div>
+                </div>`;
+            container.appendChild(newPage);
+            return newPage;
+        }
+
+        function updateRowTotal(input) {
+            const row = input.closest('tr');
+            const qty = row.querySelector('.qty').value || 0;
+            const price = row.querySelector('.price').value || 0;
+            row.querySelector('.row-total').innerText = formatCurrency(qty * price);
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            let subtotal = 0;
+            document.querySelectorAll('.tbody-content tr').forEach(row => {
+                const qty = row.querySelector('.qty').value || 0;
+                const price = row.querySelector('.price').value || 0;
+                subtotal += (qty * price);
+            });
+            const discount = document.getElementById('discount').value || 0;
+            const total = subtotal - discount;
+            document.querySelector('.subtotal-display').innerText = formatCurrency(subtotal);
+            document.querySelector('.total-display').innerText = formatCurrency(total);
+        }
+
+        function deleteRow(btn) {
+            const row = btn.closest('tr');
+            row.remove();
+            calculateTotal();
+            cleanUpEmptyPages();
+        }
+
+        function cleanUpEmptyPages() {
+            const pages = document.querySelectorAll('.page');
+            if (pages.length <= 1) return;
+            const lastPage = pages[pages.length - 1];
+            const tbody = lastPage.querySelector('.tbody-content');
+            if (tbody.querySelectorAll('tr').length === 0) {
+                const prevPage = pages[pages.length - 2];
+                prevPage.appendChild(document.getElementById('footer-summary'));
+                const addBtn = prevPage.querySelector('.add-btn-row');
+                if(addBtn) addBtn.style.display = 'block';
+                lastPage.remove();
+                pageCount--; 
+                cleanUpEmptyPages();
+            } else {
+                const addBtn = lastPage.querySelector('.add-btn-row');
+                if(addBtn) addBtn.style.display = 'block';
+            }
+        }
+
+        function addItem() {
+            const pages = document.querySelectorAll('.page');
+            let lastPage = pages[pages.length - 1];
+            let tbody = lastPage.querySelector('.tbody-content');
+            const currentItems = tbody.querySelectorAll('tr').length;
+            let limit = (lastPage.id === 'page-1') ? LIMIT_PAGE_1 : LIMIT_PAGE_OTHER;
+
+            if (currentItems >= limit) {
+                lastPage.querySelector('.add-btn-row').style.display = 'none';
+                lastPage = createNewPage();
+                tbody = lastPage.querySelector('.tbody-content');
+                lastPage.appendChild(document.getElementById('footer-summary'));
+            }
+
+            // NOVA LINHA (Inclui coluna Tamanho)
+            const row = document.createElement('tr');
+            row.className = "item-row";
+            row.innerHTML = `
+                <td class="pl-2"><input type="text" placeholder="Descrição..." class="desc-item w-full font-medium text-gray-800"></td>
+                <td class="text-center"><input type="text" placeholder="Ex: A4" class="size-item w-full text-center text-sm border-b border-transparent hover:border-gray-200"></td>
+                <td class="text-center"><input type="number" value="1" class="qty w-12 text-center border rounded border-gray-200" oninput="updateRowTotal(this)"></td>
+                <td class="text-right"><input type="number" placeholder="0.00" class="price w-20 text-right border rounded border-gray-200" oninput="updateRowTotal(this)"></td>
+                <td class="text-right font-bold row-total pr-2">R$ 0,00</td>
+                <td class="text-center no-print"><button onclick="deleteRow(this)" class="text-gray-400 hover:text-red-600 font-bold">&times;</button></td>`;
+            tbody.appendChild(row);
+        }
+
+        // --- WHATSAPP COM TAMANHO ---
+        function generateWhatsappText() {
+            const clientName = document.getElementById('clientName').value || "Cliente";
+            const total = document.querySelector('.total-display').innerText;
+            
+            let itemsText = "";
+            document.querySelectorAll('.tbody-content tr').forEach(row => {
+                const desc = row.querySelector('.desc-item').value;
+                const size = row.querySelector('.size-item').value;
+                const qty = row.querySelector('.qty').value;
+                const price = row.querySelector('.row-total').innerText;
+                
+                // Formatação inteligente: Se tiver tamanho, mostra. Se não, oculta.
+                const sizeText = size ? ` - Tam: ${size}` : "";
+
+                if(desc) itemsText += `▪ ${desc}${sizeText} (${qty}x): ${price}\n`;
+            });
+
+            return `*Olá ${clientName}, tudo bem?*\n\nSegue o resumo do orçamento solicitado:\n\n${itemsText}\n*TOTAL: ${total}*\n\nFico no aguardo!`;
+        }
+
+        function sendToWhatsapp() {
+            const phone = document.getElementById('clientPhone').value.replace(/\D/g, '');
+            if(!phone) { 
+                Toastify({ text: "Digite o número do WhatsApp!", duration: 3000, style: { background: "red" } }).showToast();
+                return; 
+            }
+            const text = encodeURIComponent(generateWhatsappText());
+            window.open(`https://web.whatsapp.com/send?phone=55${phone}&text=${text}`, '_blank');
+        }
+
+        function copyToClipboard() {
+            const text = generateWhatsappText();
+            navigator.clipboard.writeText(text).then(() => {
+                Toastify({ text: "Resumo copiado! Cole no WhatsApp (Ctrl+V)", duration: 4000, style: { background: "#4b5563" } }).showToast();
+            }).catch(err => {
+                alert("Erro ao copiar.");
+            });
+        }
+
+        addItem();
+    </script>
+</body>
+</html>
